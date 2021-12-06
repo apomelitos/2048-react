@@ -5,7 +5,7 @@
 .tile-container {
   position: absolute;
   z-index: 10;
-  margin: 0px;
+  margin: 10px;
   top: 0px;
   left: 0px;
   right: 0px;

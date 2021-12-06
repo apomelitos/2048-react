@@ -9,13 +9,13 @@ const Board = ({ tiles, tileCountPerRow = 4 }) => {
   const tileTotalWidth = 80;
   const boardMargin = 10;
 
-  const containerWidth = tileTotalWidth * tileCountPerRow;
+  const containerWidth = (tileTotalWidth + 10) * tileCountPerRow + 20;
 
-  const boardWidth = containerWidth + boardMargin;
+  const boardWidth = containerWidth + boardMargin * 2;
 
   const tilesList = tiles.map(({ id, ...restProps }) => (
     //<Tile key={`tile-${id}`} {...restProps} zIndex={id} />
-    <div></div>
+    <div>cell</div>
   ));
 
   return (
