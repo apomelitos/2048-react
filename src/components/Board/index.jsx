@@ -2,6 +2,7 @@ import React from "react";
 import { Tile } from "../Tile";
 import { BoardProvider } from "./BoardContext";
 import { Grid } from "../Grid";
+import { useBoard } from "../../hooks/useBoard";
 import "./Board.css";
 
 const Board = ({ tiles, tileCountPerRow = 4 }) => {
@@ -14,8 +15,7 @@ const Board = ({ tiles, tileCountPerRow = 4 }) => {
   const boardWidth = containerWidth + boardMargin * 2;
 
   const tilesList = tiles.map(({ id, ...restProps }) => (
-    //<Tile key={`tile-${id}`} {...restProps} zIndex={id} />
-    <div>cell</div>
+    <Tile key={`tile-${id}`} {...restProps} zIndex={id} />
   ));
 
   return (
