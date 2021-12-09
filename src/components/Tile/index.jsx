@@ -15,15 +15,15 @@ export const Tile = ({ value, position, zIndex }) => {
 
   useEffect(() => {
     if (shallAnimate) {
-      setScale(1.2);
-      setTimeout(() => setScale(1), 200);
+      setTimeout(() => setScale(1.2), 400);
+      setTimeout(() => setScale(1), 400);
     }
-  }, [shallAnimate, scale]);
+  }, [shallAnimate]);
 
   const positionToPixels = (position) => {
     return (position / tileCount) * boardWidthInPixels;
   };
-  console.log(boardWidthInPixels);
+  //console.log(boardWidthInPixels);
   const style = {
     top: positionToPixels(position[1]),
     left: positionToPixels(position[0]),
@@ -31,7 +31,7 @@ export const Tile = ({ value, position, zIndex }) => {
     zIndex: zIndex,
   };
 
-  console.log(style);
+  //console.log(style);
 
   return (
     <div className={`tile tile-${value}`} style={style}>
