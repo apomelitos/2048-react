@@ -50,11 +50,11 @@ const Game = () => {
   const getTileMap = () => {
     const tileMap = {};
 
-    tilesState.forEach((tile) => {
+    tilesState.tilesArray.forEach((tile) => {
       if (!tileMap[tile.position[1]]) {
         tileMap[tile.position[1]] = {};
       }
-      tileMap[tile.position[1]][tile.position[0]] = [tile.id, tile.value];
+      tileMap[tile.position[1]][tile.position[0]] = { ...tile };
     });
 
     return tileMap;
@@ -90,47 +90,57 @@ const Game = () => {
   const moveLeft = () => {
     const tileMap = getTileMap();
 
-    let newState = tilesState;
+    let newState = [...tilesState.tilesArray];
 
     for (let rowIdx in tileMap) {
       let col = 0;
-      let prevTileObj = null;
+      let prevTileMeta = null;
 
-      const orderedKeys = Object.keys(tileMap[rowIdx]).sort((a, b) => +a > +b);
+      const orderedKeys = Object.keys(tileMap[rowIdx]).sort((a, b) => +a - +b);
+      // console.log(orderedKeys);
 
       for (let colIdx of orderedKeys) {
-        const [tileId, tileValue] = tileMap[rowIdx][colIdx]; //[id, value]
+        const tileMeta = tileMap[rowIdx][colIdx];
+        const { value } = tileMeta;
 
-        if (prevTileObj && tileValue === prevTileObj[1]) col--;
+        if (
+          prevTileMeta &&
+          !prevTileMeta.mergeWith &&
+          value === prevTileMeta.value
+        ) {
+          tileMeta.mergeWith = prevTileMeta.id;
+          col--;
+        }
 
         const newPosition = [col, +rowIdx];
         const movedTileMeta = {
-          id: tileId,
-          value: tileValue,
+          ...tileMeta,
           position: newPosition,
         };
-
-        setTilesState(newState);
 
         newState = gameReducer(newState, {
           type: "UPDATE_TILE",
           payload: movedTileMeta,
         });
 
-        if (prevTileObj && tileValue === prevTileObj[1]) {
+        setTilesState(newState);
+
+        if (prevTileMeta && value === prevTileMeta.value) {
           newState = gameReducer(newState, {
             type: "MERGE_TILE",
-            payload: {
-              ...movedTileMeta,
-              mergeWith: prevTileObj[0],
-            },
+            source: movedTileMeta,
+            destination: prevTileMeta,
           });
         }
 
-        //console.log(newPosition);
-        //console.log(newState);
         col++;
-        prevTileObj = tileMap[rowIdx][colIdx];
+        prevTileMeta = tileMeta;
+
+        newState = gameReducer(newState, {
+          type: "CREATE_TILE",
+        });
+
+        setTilesState(newState);
       }
     }
     setTilesState(newState);
@@ -209,33 +219,49 @@ const Game = () => {
   const moveRight = () => {
     const tileMap = getTileMap();
 
-    let newState = tilesState;
+    let newState = [...tilesState];
 
     for (let rowIdx in tileMap) {
       let col = TILES_IN_COL - 1;
+      let prevTileMeta = null;
 
-      const reverseOrderedKeys = Object.keys(tileMap[rowIdx])
-        .sort((a, b) => +a > +b)
-        .reverse();
-
-      console.log(reverseOrderedKeys);
+      const reverseOrderedKeys = Object.keys(tileMap[rowIdx]).sort(
+        (a, b) => +b - +a
+      );
 
       for (let colIdx of reverseOrderedKeys) {
-        console.log(`Move col ${colIdx} to ${col}`);
-        const [tileId, tileValue] = tileMap[rowIdx][colIdx]; //[id, value]
+        const tileMeta = tileMap[rowIdx][colIdx];
+        const { value } = tileMeta;
+
+        if (!prevTileMeta?.mergeWith && value === prevTileMeta?.value) {
+          tileMeta.mergeWith = prevTileMeta.id;
+          col++;
+        }
+
         const newPosition = [col, +rowIdx];
+        const movedTileMeta = {
+          ...tileMeta,
+          position: newPosition,
+        };
+
         newState = gameReducer(newState, {
           type: "UPDATE_TILE",
-          payload: {
-            id: tileId,
-            value: tileValue,
-            position: newPosition,
-          },
+          payload: movedTileMeta,
         });
 
-        //console.log(newPosition);
-        //console.log(newState);
+        setTilesState(newState);
+
+        if (prevTileMeta?.value === value) {
+          newState = gameReducer(newState, {
+            type: "MERGE_TILE",
+            source: movedTileMeta,
+            destination: prevTileMeta,
+          });
+        }
         col--;
+        prevTileMeta = tileMeta;
+
+        setTilesState(newState);
       }
     }
     setTilesState(newState);
@@ -251,7 +277,7 @@ const Game = () => {
 
   return (
     <>
-      <Board tiles={tilesState} />
+      <Board tiles={tilesState.tilesArray} />
     </>
   );
 };
